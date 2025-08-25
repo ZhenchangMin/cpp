@@ -1,0 +1,2 @@
+# 忽略当前目录下的cppslides文件夹
+cpp slides/*
