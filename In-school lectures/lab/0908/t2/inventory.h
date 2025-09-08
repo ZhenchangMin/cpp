@@ -11,6 +11,9 @@ public:
             this->storage = s;
         }
         Thing(){
+            this->category = 0;
+            this->quality = 0;
+            this->storage = 0;
         }
         int getCategory(){
             return this->category;
@@ -36,7 +39,7 @@ public:
 class Inventory
 {
     private:
-        Thing things[20];
+        Thing things[80];
         int size;
     public:
         Inventory(){
@@ -46,8 +49,6 @@ class Inventory
             this->things[0] = thing;
             this->size = 1;
         }
-        int getStorage(int category, int quality);
-        void setStorage(int category, int quality, int storage);
         void add(Thing thing);
         void inquiry(int category);
         void combine(int category, int a, int b, int c, int d);

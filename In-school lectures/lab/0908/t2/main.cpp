@@ -39,14 +39,18 @@ int main()
         {
             while (true)
             {
-                int inquiries[5];
-                for (int i = 0; i < 5; i++)
-                {
-                    cin >> inquiries[i];
-                }
-                if (inquiries[0] == -1)
+                int category;
+                cin >> category;
+                if (category == -1)
                 {
                     break;
+                }
+
+                int inquiries[5];
+                inquiries[0] = category;
+                for (int i = 1; i < 5; i++)
+                {
+                    cin >> inquiries[i];
                 }
                 inventory.use(inquiries);
             }
