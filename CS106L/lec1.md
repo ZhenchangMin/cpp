@@ -7,4 +7,18 @@ This fundamental difference has implications for performance, development speed,
 Compiling allows us to generate more efficient machine code, but compilation can be time-consuming and even make mistakes harder to debug.
 ![1757742228767](image/lec1/1757742228767.png)
 
-### How Do We Verify Our Code?
+## Types
+A type refers to the category of data that a variable can hold.
+C++ is a statically typed language, meaning that the type of a variable must be declared at compile time and cannot change during runtime.
+`(int) x` casts x to an integer by dropping the decimal part.
+
+## Structs
+Similar to C structs.
+![1757775220884](image/lec1/1757775220884.png)
+If want to return a struct, this way is suggested.
+
+### std::pair
+![1757775510525](image/lec1/1757775510525.png)
+std::pair is technically not a type, but a template.
+When using pair, we must list the types of first and second inside the <> characters, e.g. std::pair<std::string, size_t>.
+Templates will be discussed extensively in a later chapter.
