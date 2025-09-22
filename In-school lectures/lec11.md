@@ -204,3 +204,78 @@ Complex a(1,2);
 ......
 if (!a) //a为0时true
 ```
+### 特殊的单目操作符++和--
+他们的操作数必须是**左值**，不能是临时单元中的右值。
+而前缀++和--返回的是操作数的引用，后缀++和--返回的是操作数的副本，副本是右值存在于一个临时单元之中。
+所以++(++x)和(++x)++是可以的，但是(x++)++和++(x++)是错误的。
+
+区分操作数和操作结果，就可以很容易理解前缀和后缀的区别。
+
+## 自定义类型转换操作符
+可以通过操作符重载来实现**从一个类到其它类型的转换**。
+```cpp
+class A
+{  int x,y;
+  public:
+   ......
+   operator int() //用于把A类型的对象转换成int类型
+   { return x+y; 
+   }
+};
+...…
+A a;
+int i=1;
+... (i + a) ... //将调用类型转换操作符重载函数operator int()
+			   //把对象a隐式转换成int型数据。
+```
+另外，类中带一个参数的构造函数可以作为类型转换来用：**从该参数的类型到该类的转换**。
+```cpp
+class Complex
+{		double real, imag;
+	public:
+		Complex() { real = 0; imag = 0; }
+		Complex(double r)  {	real = r; imag = 0; }//1.7通过这个构造函数转换成了一个复数对象
+		Complex(double r, double i) { real = r; imag = i; }
+		......
+  friend Complex operator + (const Complex& x, const Complex& y);
+}; //只针对Complex重载了“复数+复数”操作
+......
+Complex c(1,2);
+... (c + 1.7) ...  //1.7隐式转换成一个复数对象Complex(1.7)
+... (2.5 + c) ...  //2.5隐式转换成一个复数对象Complex(2.5)
+```
+
+### 歧义问题
+```cpp
+class A
+{		int x,y;
+	public:
+		A() { x = 0;  y = 0; }
+		A(int i) { x = i; y = 0; }
+      A(int i,int j) { x = i;  y = j; }
+		operator int() { return x+y; }
+	friend A operator +(const A &a1, const A &a2);
+};
+......
+A a;
+int i=1;
+... (a + i) ...  //是把a转换成int呢，还是把i转换成A呢？
+```
+对于这样的情况，可以用显式类型转换来解决：
+```cpp
+... ((int)a + i) ... //把a转换成int
+... (a + (A)i) ...  //把i转换成A
+```
+也可以通过给A类的构造函数A(int i)加上一个修饰符`explicit`，禁止把它用于隐式类型转换：
+```cpp
+class A
+{		int x,y;
+	public:
+		A() { x = 0;  y = 0; }
+		explicit A(int i) { x = i; y = 0; }
+      A(int i,int j) { x = i;  y = j; }
+		operator int() { return x+y; }
+	friend A operator +(const A &a1, const A &a2);
+};
+```
+当然，也可以给int类型转换操作符重载函数加一个`explicit`，禁止其用作隐式类型转换，此处不再赘述。
