@@ -74,7 +74,7 @@ void Trie::Insert(std::string st)
       addNode(node, newNode);
       node = newNode; 
     }
-    node->prefix_count++;
+    node->prefix_count++;// 每个节点的前缀计数增加1
     if (i == st.length() - 1)
     {
       node->isend = true;
