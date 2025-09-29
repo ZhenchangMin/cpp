@@ -31,7 +31,6 @@ struct TrieNode {
 class Trie {
 private:
     TrieNode *root;
-    std::vector <TrieNode *> nodes;
     // 辅助函数，用于在析构函数中递归释放所有节点内存
     void destroy(TrieNode* node);
     void addNode(TrieNode* currentRoot, TrieNode* node);
