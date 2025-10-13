@@ -232,3 +232,55 @@ p->~A(); //通过显式调用析构函数让p指向的对象消亡。
 
 ### 例：重载操作符new与delete来管理程序中某类动态对象的堆空间
 ![1760314220502](image/lec14/1760314220502.png)
+可以针对某个类，通过重载new和delete**自己管理**动态对象的空间分配和释放，以提高效率。
+重载new：
+- 第一次创建该类的动态对象时，先从系统管理的堆区中申请一块**大的空间**，里面能放n个该类对象。
+- 然后把上述大空间分成若干小块，每个小块的大小为该类一个对象的大小，用链表把这些小块管理起来，形成**自由空间链表**。
+- 每次创建该类的动态对象时，从上述自由空间链表中为其分配空间。
+
+重载delete：
+- 该类的动态对象消亡时，把对象的空间归还到new操作中申请到的大空间（**自由空间链表**）中，**而不是归还到系统的堆区中**。
+
+例如：
+```cpp
+#include <cstring>
+class A
+{		...... //类A原有的成员说明
+	public:
+		static void *operator new(size_t size);
+		static void operator delete(void *p);
+	private:
+		A *next; //用于组织A类对象自由空间链表
+		static A *p_free; //用于指向A类对象的自由空间链表头，由于是被共享的，所以要声明为静态成员
+};
+A *A::p_free=NULL;
+const int NUM=32; //每次从系统堆区申请NUM个A类对象的空间
+//重载操作符new
+void *A::operator new(size_t size)
+{	if (p_free == NULL) //创建第一个A类动态对象
+	{	//申请NUM个A类对象的大空间。
+	    p_free = (A *)malloc(size*NUM);  //一个动态数组
+		//在大空间上建立自由空间链表（链表结点初始是连续的）
+		for (int i=0; i<NUM-1; i++)
+		   p_free[i].next = &p_free[i+1];
+		p_free[NUM-1].next = NULL;//构造链表
+	}
+    //从链表中给当前动态对象分配空间
+	A *p=p_free;
+	p_free = p_free->next;
+	memset(p,0,size); //可由构造函数完成
+	return p;
+}
+//重载操作符delete
+void A::operator delete(void *p)
+{	//把p指向的空间还到自由空间链表中
+   ((A *)p)->next = p_free;//让p指向的对象的next指向现在空的第一个节点
+	p_free = (A *)p;//把原先指向第一个空的节点的指针p_free改为p
+}
+
+A *q1=new A;
+A *q2=new A;
+delete q1;
+```
+在创建动态对象时，一大块用完了，根据new的重载函数，它将会申请第二大块，并再次构建自由空间链表：
+![1760315251211](image/lec14/1760315251211.png)
