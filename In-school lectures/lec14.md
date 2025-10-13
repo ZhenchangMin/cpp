@@ -156,3 +156,48 @@ p3 = p4; //Error，第四个对象被p4独占
 p3 = nullptr;  //第三个对象消亡
 p4 = nullptr;  //第四个对象消亡
 ```
+
+智能指针消亡时，它指向的动态对象也会消亡：
+```cpp
+void func()
+{ shared_ptr<A> p1(new A(1)); 
+   p1->f(); 
+   ......
+   unique_ptr<A> p2(new A(2));
+   p2->f(); 
+   ......
+} 
+int main()
+{ func();//p1和p2生存期结束，它们指向的动态对象自动消亡
+  ......
+}
+```
+
+## new与delete的重载
+操作符new有两个功能：
+- 为动态对象分配空间
+- 调用对象类的构造函数
+操作符delete也有两个功能：
+- 调用对象类的析构函数
+- 释放动态对象的空间 
+
+### new的重载
+void *operator new(size_t size);
+返回类型必须为`void *`
+参数`size`表示对象所需空间的大小，其类型为size_t（平台相关的无符号整数类型，可以是unsigned int、unsigned long int等）
+例如，下面重载的new除了为对象分配空间外，还把动态对象初始化为全‘0’：
+```cpp
+#include <cstring>
+class A
+{		int x,y;
+	public:
+		void *operator new(size_t size)
+		{	void *p=malloc(size); //调用系统堆空间分配操作。
+			memset(p,0,size); //把申请到的堆空间初始化为全“0”。
+			return p;
+		}
+		......
+};
+```
+上面重载的new与系统提供的差别在于：它可以为一个**没有定义任何构造函数的动态对象**提供初始化！
+![1760313564718](image/lec14/1760313564718.png)
