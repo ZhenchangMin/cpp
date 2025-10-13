@@ -201,3 +201,34 @@ class A
 ```
 上面重载的new与系统提供的差别在于：它可以为一个**没有定义任何构造函数的动态对象**提供初始化！
 ![1760313564718](image/lec14/1760313564718.png)
+例如，下面重载的new在非“堆区”为动态对象分配空间：
+```cpp
+#include <cstring>
+class A
+{		int x,y;
+	public:
+		A(int i, int j) { x=i; y=j; }
+		void *operator new(size_t size, void *p)
+		{ return p; //p是空间上为动态对象的分配空间地址
+		}
+};
+
+
+char buf[sizeof(A)];
+A *p=new (buf) A(1,2); //把buf传给new重载函数的参数p
+                        //在buf中创建动态对象
+
+p->~A(); //通过显式调用析构函数让p指向的对象消亡。
+		      //不能用系统的delete，可以用自己重载的delete
+```
+
+### delete的重载
+一般来说，如果对某个类重载了操作符new，则相应地也要重载操作符delete。
+操作符delete也必须作为静态的成员函数来重载（static可以不写），其格式为： 
+	void operator delete(void *p, size_t size);
+返回类型必须为void。
+第一个参数类型为void *，指向对象的内存空间。
+第二个参数可有可无，如果有，则必须是size_t类型。
+
+### 例：重载操作符new与delete来管理程序中某类动态对象的堆空间
+![1760314220502](image/lec14/1760314220502.png)
