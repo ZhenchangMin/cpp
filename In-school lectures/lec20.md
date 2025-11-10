@@ -83,3 +83,84 @@ int x=10;
 cout << hex << x << endl; //以十六进制输出x的值，然后换行。
 ```
 ![1762755853959](image/lec20/1762755853959.png)
+对于浮点数（float、double和long double）：
+- 当输出格式为`ios::scientific`或`ios::fixed`时，操纵符setprecision用于设置浮点数**小数点后面的位数**
+- 当输出格式为自动方式（既不是ios::scientific也不是ios::fixed，或两者同时设了）时，操纵符setprecision用于设置浮点数**有效数字的个数**，这时的输出格式根据有效数字自动确定。
+
+除了用操作符`<<`进行基本数据类型的输出外，也可以用ostream类的成员函数进行**基于字节**的控制台输出操作。
+```cpp
+//输出一个字节。
+ostream& ostream::put(char ch); 
+cout.put('A');
+//输出p所指向的内存空间中count个字节。
+ostream& ostream::write(const char *p,int count);
+char info[100];  
+int n;
+......
+cout.write(info,n); 
+```
+
+### 控制台的输入操作
+用抽取操作符`>>`进行基本数据类型数据的控制台输入。
+
+用抽取操作符>>进行输入时，各个数据之间一般要用**空白符**（空格、\t、\n）分开：
+输入一个数据前，先**跳过空白符**
+输入一个数据的过程中，碰到空白符或当前数据类型**不允许的字符**时，**结束**当前数据的输入
+
+可以通过一些**操纵符**来控制输入的行为
+```cpp
+char str[10];
+cin >> setw(10) >> str; //把输入的字符串和一个'\0'放入str中，也就是最多输入9个字符
+// 多的字符放在输入缓冲区之中。
+// 如果不加这个函数，可能会让str这个空间出问题，被撑爆
+```
+
+除了用操作符`>>`进行基本数据类型的输入外，也可以用istream类的成员函数进行**基于字节**的控制台输入操作。
+```cpp
+//输入一个字节到ch中。
+istream& istream::get(char &ch); 
+//输入count个字节至p所指向的内存空间中。
+istream& istream::read(char *p,int count);
+//输入一个字符串放入p指向的内存空间中。输入过程直到输入了count-1个字符或遇到delim指定的字符为止，并自动在最后加上一个'\0'字符。
+istream& istream::get(char *p, int count, char delim='\n'); 
+istream& istream::getline(char *p, int count, char delim='\n');
+```
+用istream类的成员函数进行输入时，**空白符**也会作为字符输入！
+因此如果要输入一个带空格的字符串，就用get或者getline，不会因为空白符结束
+
+另外，可以用下面的成员函数**跳过**输入缓存中的若干字符
+```cpp
+cin.ignore(n,'\n'); //跳过输入缓存中n个字符，或碰到回车
+//例如：
+char str[5]; int x;
+cin.get(str,5); //输入：abcdefg↙，只读入abcd，efg留在输入缓冲区中
+cin.ignore(20,'\n'); //跳过输入缓冲区中遗留的efg
+cin >> x; //输入：12↙，x得到12，它输入缓冲区中遗留的efg已经被跳过
+```
+
+### 操作符`>>`和`<<`的重载
+重载之后的这两个操作符只能进行基本数据类型的输入输出
+自定义类型的对象，可以再对这两个操作符进行自定义的重载，就可以进行自定义对象的输入输出
+
+例子：实现复数类的输出
+```cpp
+class Complex
+{  ......
+    friend ostream& operator << (ostream &out, const Complex &c);
+  private：
+	double real;
+	double imag;			
+};
+ostream& operator << (ostream &out, const Complex &c)
+{	out << c.real << '+' << c.imag << 'i';
+	return out;
+}
+.....
+Complex c1,c2;
+cout << c1 << endl << c2 << endl;
+```
+
+## 面向文件的I/O
+用于永久性保存数据的设备称为**外部存储器**（简称：外存），比如磁盘、光盘等
+
+### 文件
