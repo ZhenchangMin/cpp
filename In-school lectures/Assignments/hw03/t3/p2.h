@@ -1,15 +1,8 @@
 #include <iostream>
+#include "Vehicle.h"
 using namespace std;
 
-class Vehicle {
-protected:
-    string name;
-public:
-    Vehicle(const string& n) : name(n) {}
-    virtual void drive() = 0;
-};
-
-class Car : public Vehicle {
+class Car : virtual public Vehicle {
 public:
     Car(const string& n) : Vehicle(n) {}
     void drive() override{
@@ -20,7 +13,7 @@ public:
     }
 };
 
-class Boat : public Vehicle {
+class Boat : virtual public Vehicle {
 public:
     Boat(const string& n) : Vehicle(n) {}
     void drive() override{
@@ -32,7 +25,7 @@ public:
 };
 class AmphibianCar : public Car, public Boat {
 public:
-    AmphibianCar(const string& n) : Car(n), Boat(n) {}
+    AmphibianCar(const string& n) : Car(n), Boat(n), Vehicle(n) {}
     void driveAsCar(){
         cout << Car::getName() << " drive on road as car" << endl;
     }
@@ -40,10 +33,10 @@ public:
         cout << Boat::getName() << " drive on river as boat" << endl;
     }
     void drive() override {
-        if (Car *car = dynamic_cast<Car*>(this)) {
-            
+        if ((Car*)this != nullptr && typeid(*this) == typeid(AmphibianCar)) {
+            driveAsCar();
         }
-        else if (dynamic_cast<Boat*>(this)) {
+        else if ((Boat*)this != nullptr) {
             driveAsBoat();
         }
     }
