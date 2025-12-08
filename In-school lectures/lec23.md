@@ -103,7 +103,7 @@ basic_string<wchar_t>
 - 输出迭代器（output iterator，OouIt）
 只能**修改**它所指向的容器元素,间接访问（*）,++（只能向后遍历）
 
-- 输出迭代器（input iterator，InIt）
+- 输入迭代器（input iterator，InIt）
 只能**读取**它所指向的容器元素,间接访问（*）和元素成员间接访问（->）,++、==、!=。
 
 - 前向迭代器（forward iterator，FwdIt）
@@ -125,3 +125,73 @@ basic_string<wchar_t>
 
 ## 算法
 在STL中，除了用容器类自身提供的成员函数来操作容器元素外，还提供了一系列通用的对容器中元素进行操作的全局函数，称为算法（algorithm）。
+算法是用函数模板实现的，除了算术算法在头文件`numeric`中定义外，其它算法都在头文件`algorithm`中定义。
+
+在STL中，一般不是把容器传给算法，而是把容器的某些**迭代器**传给它们，在算法中通过迭代器来访问和遍历相应容器中的元素。
+这样做的好处是提高了算法的通用性，只要容器的迭代器类型是符合要求的，就可以使用该算法，而不用针对不同的容器类重新实现算法。
+
+一个算法能接收的迭代器的类型是通过**算法模板参数的名字**来体现的。例如：
+```cpp
+template <class InIt, class OutIt>
+OutIt copy(InIt src_first, InIt src_last, 
+                OutIt dst_first)
+{ ...... }
+```
+src_first和src_last的类型是输入迭代器，算法中只读取它们指向的元素。
+dst_first的类型是输出迭代器，算法中可以修改它指向的元素。
+以上参数可以接受与之相容的迭代器。
+
+用算法对容器中的元素进行操作时，大都需要用两个迭代器来指出要操作的元素的**范围**
+```cpp
+void sort(RanIt first, RanIt last);
+
+vector<int> v;
+...... //往容器中放了元素
+sort(v.begin(),v.end()); //对v中的所有元素进行排序
+```
+
+有些算法可以让使用者提供一个函数或函数对象来作为**自定义操作条件**（或称为谓词），其参数类型为相应容器的**元素类型**，**返回值类型为bool**。
+自定义操作条件可分为：
+一元“谓词”（记为：Pred）：需要一个元素作为参数
+二元“谓词”（记为：BinPred）：需要两个元素作为参数
+例如，下面的“统计”算法需要一个一元谓词作为统计的条件：
+```cpp
+size_t count_if(InIt first, InIt last, Pred cond); // 统计[first,last)范围内满足条件cond的元素个数的算法
+
+bool f(int x) { return x > 0; }
+vector<int> v;
+...... //往容器中放了元素
+cout<<count_if(v.begin(),v.end(),f); //统计v中正数的个数
+```
+
+再例如，下面 “排序”算法的第二个重载需要一个二元谓词作为排序条件：
+```cpp
+void sort(RanIt first, RanIt last); //按“<”排序
+void sort(RanIt first, RanIt last, BinPred comp); 
+                             //按comp返回true规定的次序
+
+vector<int> v;
+...... //往容器中放了元素
+//从小到大排序
+sort(v.begin(),v.end()); 
+//从大到小排序
+bool greater(int x1, int x2) { return x1>x2; }
+sort(v.begin(),v.end(),greater); 
+```
+
+
+有些算法可以让使用者提供一个函数或函数对象作为自定义操作，其参数和返回值类型由相应的算法决定。
+自定义操作可分为：
+一元操作（记为：Op或Fun），需要一个参数
+二元操作（记为：BinOp或BinFun），需要两个参数
+例如，下面的“元素遍历”算法需要提供一个一元操作，其参数为容器的元素类型，返回值为任意类型：
+```cpp
+Fun for_each(InIt first, InIt last, Fun f); // 对[first,last)范围内的每个元素去调用函数f进行操作，返回值为Fun
+
+void display(int x) { cout << ' ' << x; }
+vector<int> v;
+...... //往容器中放了元素
+for_each(v.begin(),v.end(),display); //对v中的每个元素去调用
+					//函数display进行操作
+```
+
