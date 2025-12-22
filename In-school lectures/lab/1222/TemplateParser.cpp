@@ -47,7 +47,7 @@ static bool match_template(const TemplateFunction &f, const CallSite &cs) {
       } else {
         if (it->second != ap.name) return false; // 绑定冲突
       }
-    } else {
+    } else {// 如果不是模板参数，必须完全匹配
       if (fp != ap) return false;
     }
   }
@@ -67,6 +67,7 @@ static int count_template_kinds(const TemplateFunction &f) {
 
 std::string resolve_call(const std::vector<TemplateFunction> &functions,
                          CallSite cs) {
+    // 优先匹配非模板函数
   for (size_t i = 0; i < functions.size(); ++i) {
     const auto &f = functions[i];
     if (match_non_template(f, cs)) {
@@ -82,13 +83,15 @@ std::string resolve_call(const std::vector<TemplateFunction> &functions,
   vector<Cand> cands;
   for (size_t i = 0; i < functions.size(); ++i) {
     const auto &f = functions[i];
+    // 匹配模板函数
     if (match_template(f, cs)) {
       cands.push_back({(int)i, count_template_params(f), count_template_kinds(f)});
     }
   }
-
+  // 未找到匹配的函数，返回错误信息
   if (cands.empty()) return "Function not found.";
 
+  // 按照模板参数数量和种类数进行排序，选择最优匹配
   sort(cands.begin(), cands.end(), [](const Cand &a, const Cand &b) {
     if (a.tcnt != b.tcnt) return a.tcnt < b.tcnt;
     if (a.kcnt != b.kcnt) return a.kcnt < b.kcnt;
